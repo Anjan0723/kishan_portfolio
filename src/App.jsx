@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
+import { AnimatePresence } from 'framer-motion';
+import Preloader from './components/Preloader';
+import CustomCursor from './components/CustomCursor';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Portfolio from './components/Portfolio';
@@ -15,14 +18,22 @@ import AdminDashboard from './components/AdminDashboard';
 export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const isAdminRoute = window.location.pathname === '/admin';
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+
     const unsub = onAuthStateChanged(auth, (user) => {
       setIsAdmin(!!user);
       setAuthChecked(true);
     });
-    return unsub;
+    return () => {
+      unsub();
+      clearTimeout(timer);
+    };
   }, []);
 
   if (isAdminRoute) {
@@ -36,7 +47,11 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream dark:bg-ink text-ink dark:text-cream transition-colors duration-500">
+      <CustomCursor />
+      <AnimatePresence mode="wait">
+        {isLoading && <Preloader key="preloader" />}
+      </AnimatePresence>
       <Navbar />
       <Hero />
       <Portfolio />

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 const CATEGORIES = ['All', 'Pre-wedding', 'Wedding', 'Portraits', 'Events'];
 
@@ -9,6 +10,15 @@ export default function Portfolio() {
   const [lightbox, setLightbox] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+  
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, 100]);
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -29,18 +39,18 @@ export default function Portfolio() {
   const filtered = active === 'All' ? photos : photos.filter(i => i.category === active);
 
   return (
-    <section id="portfolio" className="py-24 px-6 bg-cream">
+    <section id="portfolio" ref={containerRef} className="py-24 px-6 bg-cream dark:bg-ink transition-colors duration-500">
       <div className="max-w-6xl mx-auto">
         <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <p className="text-xs tracking-widest2 uppercase text-muted font-body mb-3">— Work</p>
-            <h2 className="font-display text-5xl md:text-6xl font-light text-ink">Portfolio</h2>
+            <p className="text-xs tracking-widest2 uppercase text-muted dark:text-stone font-body mb-3">— Work</p>
+            <h2 className="font-display text-5xl md:text-6xl font-light text-ink dark:text-cream">Portfolio</h2>
           </div>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map(c => (
               <button key={c} onClick={() => setActive(c)}
                 className={`text-xs tracking-widest uppercase px-4 py-2 border transition-all duration-200 font-body
-                  ${active === c ? 'bg-ink text-cream border-ink' : 'border-stone text-muted hover:border-ink hover:text-ink'}`}>
+                  ${active === c ? 'bg-ink dark:bg-cream text-cream dark:text-ink border-ink dark:border-cream' : 'border-stone dark:border-stone/50 text-muted dark:text-stone hover:border-ink dark:hover:border-cream hover:text-ink dark:hover:text-cream'}`}>
                 {c}
               </button>
             ))}
@@ -49,18 +59,19 @@ export default function Portfolio() {
 
         {loading ? (
           <div className="text-center py-20">
-            <p className="text-xs tracking-widest uppercase text-muted font-body animate-pulse">Loading portfolio...</p>
+            <p className="text-xs tracking-widest uppercase text-muted dark:text-stone font-body animate-pulse">Loading portfolio...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 border-2 border-dashed border-stone/30">
-            <p className="font-display text-3xl text-stone font-light italic mb-2">Coming soon</p>
-            <p className="text-xs tracking-widest uppercase text-muted font-body">Photos will appear here once added</p>
+          <div className="text-center py-20 border-2 border-dashed border-stone/30 dark:border-stone/10">
+            <p className="font-display text-3xl text-stone dark:text-stone/50 font-light italic mb-2">Coming soon</p>
+            <p className="text-xs tracking-widest uppercase text-muted dark:text-stone font-body">Photos will appear here once added</p>
           </div>
         ) : (
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-            {filtered.map(item => (
-              <div key={item.id}
-                className="break-inside-avoid cursor-pointer group relative overflow-hidden"
+            {filtered.map((item, index) => (
+              <motion.div key={item.id}
+                style={{ y: index % 2 === 0 ? y1 : y2 }}
+                className="break-inside-avoid cursor-pointer group relative overflow-hidden mb-4"
                 onClick={() => setLightbox(item)}>
                 <img src={item.img} alt={item.title}
                   className="w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -71,7 +82,7 @@ export default function Portfolio() {
                     <p className="text-xs tracking-widest uppercase text-stone font-body mt-1">{item.location}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

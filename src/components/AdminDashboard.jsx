@@ -198,26 +198,23 @@ export default function AdminDashboard() {
               <p className="text-xs tracking-widest uppercase text-muted font-body">Add your first photo using the form</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {photos.map(photo => (
-                <div key={photo.id} className="group relative overflow-hidden bg-stone/10">
-                  <img src={photo.img} alt={photo.title}
-                    className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/70 transition-all duration-300 flex flex-col items-center justify-center gap-2 p-3">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center">
-                      <p className="font-display text-sm text-cream italic">{photo.title}</p>
-                      <p className="text-[10px] tracking-widest uppercase text-stone font-body mt-0.5">{photo.category}</p>
-                      <p className="text-[10px] text-stone font-body">{photo.location}</p>
-                      <button
-                        onClick={() => setDeleteConfirm(photo.id)}
-                        className="mt-3 px-3 py-1.5 border border-red-400 text-red-400 text-[10px] tracking-widest uppercase font-body hover:bg-red-400 hover:text-white transition-colors">
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+  {photos.map(photo => (
+    <div key={photo.id} className="bg-cream border border-stone/20 overflow-hidden">
+      <img src={photo.img} alt={photo.title}
+        className="w-full aspect-square object-cover" />
+      <div className="p-3">
+        <p className="font-display text-sm text-ink italic truncate">{photo.title}</p>
+        <p className="text-[10px] tracking-widest uppercase text-muted font-body mt-0.5">{photo.category} · {photo.location}</p>
+        <button
+          onClick={() => setDeleteConfirm(photo.id)}
+          className="mt-3 w-full py-2 border border-red-400 text-red-400 text-[10px] tracking-widest uppercase font-body hover:bg-red-400 hover:text-white transition-colors">
+          🗑 Delete
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
           )}
         </div>
       </div>
