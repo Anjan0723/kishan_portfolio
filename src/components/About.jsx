@@ -8,7 +8,7 @@ export default function About() {
             <div className="aspect-[3/4] overflow-hidden">
               <img
                 src="https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=800&q=80"
-                alt="Kishan Kumar T G — Photographer"
+                alt="Kishu — Photographer"
                 className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
               />
             </div>
@@ -30,7 +30,7 @@ export default function About() {
                 genuine moments — the ones that make you feel something long after the day has passed.
               </p>
               <p>
-                Under the brand <strong className="text-ink dark:text-cream font-medium">shot Flicks</strong>, I work across
+                Under the brand <strong className="text-ink dark:text-cream font-medium">shot Flick</strong>, I work across
                 pre-wedding shoots, weddings, portraits, and events. My approach is relaxed and personal — I
                 believe the best photos happen when people forget there's a camera around.
               </p>

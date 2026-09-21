@@ -83,7 +83,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="bg-ink px-6 py-4 flex items-center justify-between">
         <div>
-          <div className="font-display text-lg font-light tracking-widest2 text-cream uppercase">shot Flicks</div>
+          <div className="font-display text-lg font-light tracking-widest2 text-cream uppercase">shot Flick</div>
           <div className="text-[10px] tracking-widest text-stone font-body uppercase">Admin Panel</div>
         </div>
         <div className="flex items-center gap-6">

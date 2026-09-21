@@ -26,7 +26,7 @@ export default function AdminLogin({ onLogin }) {
     <div className="min-h-screen bg-cream flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-12">
-          <div className="font-display text-3xl font-light tracking-widest2 text-ink uppercase mb-1">shot Flicks</div>
+          <div className="font-display text-3xl font-light tracking-widest2 text-ink uppercase mb-1">shot Flick</div>
           <div className="text-xs tracking-widest text-muted font-body uppercase">Admin Panel</div>
         </div>
 

@@ -5,21 +5,33 @@ export default function Hero() {
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden bg-cream dark:bg-ink">
-      {/* Video Background */}
-      <video 
-        autoPlay loop muted playsInline 
-        className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src="https://assets.codepen.io/3364143/7btrrd.mp4" type="video/mp4" />
-      </video>
-      {/* Overlay to ensure text readability */}
-      <div className="absolute inset-0 bg-cream/70 dark:bg-ink/80 transition-colors duration-500" />
-
-      {/* Big background text */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-        <span className="font-display text-[18vw] font-light text-stone/20 dark:text-cream/10 leading-none tracking-tight whitespace-nowrap">
-          FLICKS
-        </span>
+      {/* Animated Floating Background Texts */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        {[
+          { top: '10%', left: '-5%', size: '15vw', delay: 0 },
+          { top: '60%', left: '80%', size: '10vw', delay: 2 },
+          { top: '80%', left: '10%', size: '20vw', delay: 1 },
+          { top: '30%', left: '60%', size: '12vw', delay: 3 },
+          { top: '50%', left: '-10%', size: '25vw', delay: 4 },
+        ].map((pos, i) => (
+          <motion.span
+            key={i}
+            animate={{ 
+              y: [0, -30, 0], 
+              opacity: [0.03, 0.08, 0.03]
+            }}
+            transition={{ 
+              duration: 8, 
+              repeat: Infinity, 
+              delay: pos.delay,
+              ease: "easeInOut"
+            }}
+            className="absolute font-display font-light text-stone/50 dark:text-cream/20 leading-none tracking-tight whitespace-nowrap"
+            style={{ top: pos.top, left: pos.left, fontSize: pos.size }}
+          >
+            FLICK
+          </motion.span>
+        ))}
       </div>
 
       {/* Content */}
@@ -40,7 +52,7 @@ export default function Hero() {
           className="font-display text-6xl md:text-8xl font-light text-ink dark:text-cream leading-none mb-4 transition-colors"
         >
           shot<br />
-          <em className="italic text-muted">Flicks</em>
+          <em className="italic text-muted">Flick</em>
         </motion.h1>
 
         <motion.p 
@@ -49,7 +61,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 2.6 }}
           className="font-body text-base text-muted dark:text-stone font-light max-w-md mx-auto mb-12 leading-relaxed"
         >
-          Stories told through light and motion — by Kishan Kumar T G, based in Davangere, Karnataka
+          Stories told through light and motion — by Kishu, based in Davangere, Karnataka
         </motion.p>
 
         <motion.div 

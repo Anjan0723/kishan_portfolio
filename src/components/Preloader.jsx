@@ -15,7 +15,7 @@ export default function Preloader() {
         className="text-center"
       >
         <span className="font-display text-4xl md:text-6xl font-light text-ink tracking-widest uppercase">
-          shot<em className="italic text-muted lowercase">Flicks</em>
+          shot<em className="italic text-muted lowercase">Flick</em>
         </span>
       </motion.div>
     </motion.div>

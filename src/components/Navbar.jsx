@@ -25,8 +25,8 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
         {/* Logo */}
         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-left">
-          <div className="font-display text-xl font-light tracking-widest2 text-ink dark:text-cream uppercase">shot Flicks</div>
-          <div className="text-[10px] tracking-widest text-muted dark:text-stone font-body uppercase">Kishan Kumar T G</div>
+          <div className="font-display text-xl font-light tracking-widest2 text-ink dark:text-cream uppercase">shot Flick</div>
+          <div className="text-[10px] tracking-widest text-muted dark:text-stone font-body uppercase">Kishu</div>
         </button>
 
         {/* Desktop links */}
