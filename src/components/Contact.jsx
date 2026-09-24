@@ -11,7 +11,7 @@ export default function Contact() {
     // In production: connect to Formspree, EmailJS, or any free form backend
     // For now, open WhatsApp with prefilled message
     const msg = `Hi Kishan! I'd like to book a ${form.type || 'shoot'}.\nName: ${form.name}\nDate: ${form.date}\nMessage: ${form.message}`;
-    window.open(`https://wa.me/91XXXXXXXXXX?text=${encodeURIComponent(msg)}`, '_blank');
+    window.open(`https://wa.me/919113579050?text=${encodeURIComponent(msg)}`, '_blank');
     setSent(true);
   };
 
@@ -34,14 +34,20 @@ export default function Contact() {
             {/* Contact details */}
             <div className="space-y-5">
               {[
-                { label: 'WhatsApp / Call', value: '+91 XXXXX XXXXX' },
-                { label: 'Email', value: 'shotflicks@gmail.com' },
+                { label: 'WhatsApp / Call', value: '+91 9113579050', href: 'tel:+919113579050' },
+                { label: 'Email', value: 'shot.flick06@gmail.com', href: 'mailto:shot.flick06@gmail.com' },
                 { label: 'Based in', value: 'Davangere, Karnataka' },
                 { label: 'Available', value: 'Pan Karnataka · Destination shoots' },
-              ].map(({ label, value }) => (
+              ].map(({ label, value, href }) => (
                 <div key={label} className="flex flex-col gap-1">
                   <span className="text-[10px] tracking-widest uppercase text-stone dark:text-stone/70 font-body">{label}</span>
-                  <span className="text-sm font-body text-ink dark:text-cream">{value}</span>
+                  {href ? (
+                    <a href={href} className="text-sm font-body text-ink dark:text-cream hover:underline transition-all">
+                      {value}
+                    </a>
+                  ) : (
+                    <span className="text-sm font-body text-ink dark:text-cream">{value}</span>
+                  )}
                 </div>
               ))}
             </div>
