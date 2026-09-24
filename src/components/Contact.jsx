@@ -78,7 +78,10 @@ export default function Contact() {
                 <input name="name" required placeholder="Your name *" value={form.name} onChange={handle} className={inputClass} />
                 <input name="email" type="email" placeholder="Email address *" value={form.email} onChange={handle} className={inputClass} />
                 <input name="phone" placeholder="Phone / WhatsApp" value={form.phone} onChange={handle} className={inputClass} />
-                <input name="date" placeholder="Event / shoot date" value={form.date} onChange={handle} className={inputClass} />
+                <div className="w-full border-b border-stone/40 dark:border-stone/20 focus-within:border-ink dark:focus-within:border-cream transition-colors duration-200 pt-2 pb-2">
+                  <span className="text-[10px] tracking-widest uppercase text-stone dark:text-stone/50 font-body mb-1 block">Event / Shoot Date</span>
+                  <input name="date" type="date" min={new Date().toISOString().split('T')[0]} value={form.date} onChange={handle} className="w-full bg-transparent outline-none text-sm font-body text-ink dark:text-cream cursor-pointer" />
+                </div>
                 <select name="type" value={form.type} onChange={handle}
                   className={`${inputClass} bg-warm dark:bg-[#24211C] appearance-none cursor-pointer`}>
                   <option value="" disabled>Type of shoot *</option>
