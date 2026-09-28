@@ -1,12 +1,22 @@
 import { motion } from 'framer-motion';
+import FadeImage from './FadeImage';
 
 export default function Hero() {
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden bg-cream dark:bg-ink">
+      <div className="absolute inset-0 z-0">
+        <FadeImage 
+          src="/hero-bg.jpg" 
+          alt="Hero background" 
+          className="w-full h-full object-cover opacity-30 dark:opacity-20"
+        />
+        <div className="absolute inset-0 bg-cream/70 dark:bg-ink/70 mix-blend-multiply" />
+      </div>
+
       {/* Animated Floating Background Texts */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
         {[
           { top: '10%', left: '-5%', size: '15vw', delay: 0 },
           { top: '60%', left: '80%', size: '10vw', delay: 2 },

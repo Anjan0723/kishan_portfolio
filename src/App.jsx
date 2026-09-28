@@ -14,6 +14,8 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import { Analytics } from '@vercel/analytics/react';
+import StickyContactBar from './components/StickyContactBar';
 
 export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -38,12 +40,25 @@ export default function App() {
 
   if (isAdminRoute) {
     if (!authChecked) return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <p className="text-xs tracking-widest uppercase text-muted font-body animate-pulse">Loading...</p>
-      </div>
+      <>
+        <CustomCursor />
+        <div className="min-h-screen bg-cream flex items-center justify-center">
+          <p className="text-xs tracking-widest uppercase text-muted font-body animate-pulse">Loading...</p>
+        </div>
+      </>
     );
-    if (!isAdmin) return <AdminLogin onLogin={() => setIsAdmin(true)} />;
-    return <AdminDashboard />;
+    if (!isAdmin) return (
+      <>
+        <CustomCursor />
+        <AdminLogin onLogin={() => setIsAdmin(true)} />
+      </>
+    );
+    return (
+      <>
+        <CustomCursor />
+        <AdminDashboard />
+      </>
+    );
   }
 
   return (
@@ -60,6 +75,8 @@ export default function App() {
       <Testimonials />
       <Contact />
       <Footer />
+      <Analytics />
+      <StickyContactBar />
     </div>
   );
 }

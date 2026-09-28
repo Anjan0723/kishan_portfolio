@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', date: '', type: '', message: '' });
@@ -6,10 +8,23 @@ export default function Contact() {
 
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const submit = e => {
+  const submit = async e => {
     e.preventDefault();
-    // In production: connect to Formspree, EmailJS, or any free form backend
-    // For now, open WhatsApp with prefilled message
+    try {
+      await addDoc(collection(db, 'bookings'), {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        date: form.date,
+        type: form.type,
+        message: form.message,
+        createdAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error saving booking:', error);
+    }
+
+    // Open WhatsApp with prefilled message
     const msg = `Hi Kishan! I'd like to book a ${form.type || 'shoot'}.\nName: ${form.name}\nDate: ${form.date}\nMessage: ${form.message}`;
     window.open(`https://wa.me/919113579050?text=${encodeURIComponent(msg)}`, '_blank');
     setSent(true);

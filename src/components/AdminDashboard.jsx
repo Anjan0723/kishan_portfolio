@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import { signOut } from 'firebase/auth';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
@@ -8,6 +10,9 @@ const CATEGORIES = ['Pre-wedding', 'Wedding', 'Portraits', 'Events'];
 
 export default function AdminDashboard() {
   const [photos, setPhotos] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [activeTab, setActiveTab] = useState('portfolio');
+  const [calendarDate, setCalendarDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -29,7 +34,27 @@ export default function AdminDashboard() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchPhotos(); }, []);
+  const fetchBookings = async () => {
+    try {
+      const snap = await getDocs(collection(db, 'bookings'));
+      const sorted = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setBookings(sorted);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const tileContent = ({ date, view }) => {
+    if (view === 'month') {
+      const isBooked = bookings.some(b => b.date && new Date(b.date).toDateString() === date.toDateString());
+      if (isBooked) {
+        return <div className="mx-auto mt-1 w-1.5 h-1.5 bg-accent rounded-full"></div>;
+      }
+    }
+    return null;
+  };
+
+  useEffect(() => { fetchPhotos(); fetchBookings(); }, []);
 
   const handleFile = (e) => {
     const file = e.target.files[0];
@@ -87,6 +112,10 @@ export default function AdminDashboard() {
           <div className="text-[10px] tracking-widest text-stone font-body uppercase">Admin Panel</div>
         </div>
         <div className="flex items-center gap-6">
+          <div className="hidden md:flex gap-6 mr-6">
+            <button onClick={() => setActiveTab('portfolio')} className={`text-xs tracking-widest uppercase font-body transition-all pb-1 ${activeTab === 'portfolio' ? 'text-cream border-b border-cream' : 'text-stone hover:text-cream'}`}>Portfolio</button>
+            <button onClick={() => setActiveTab('bookings')} className={`text-xs tracking-widest uppercase font-body transition-all pb-1 ${activeTab === 'bookings' ? 'text-cream border-b border-cream' : 'text-stone hover:text-cream'}`}>Bookings</button>
+          </div>
           <a href="/" className="text-xs tracking-widest uppercase text-stone font-body hover:text-cream transition-colors">
             View Site
           </a>
@@ -97,7 +126,14 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="md:hidden flex gap-6 px-6 py-4 bg-ink/95 border-t border-stone/20">
+        <button onClick={() => setActiveTab('portfolio')} className={`text-xs tracking-widest uppercase font-body transition-all ${activeTab === 'portfolio' ? 'text-cream border-b border-cream' : 'text-stone'}`}>Portfolio</button>
+        <button onClick={() => setActiveTab('bookings')} className={`text-xs tracking-widest uppercase font-body transition-all ${activeTab === 'bookings' ? 'text-cream border-b border-cream' : 'text-stone'}`}>Bookings</button>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        {activeTab === 'portfolio' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
         {/* Upload form */}
         <div className="lg:col-span-1">
@@ -217,6 +253,82 @@ export default function AdminDashboard() {
 </div>
           )}
         </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            {/* Calendar */}
+            <div className="lg:col-span-1">
+              <div className="bg-cream p-8 sticky top-6">
+                <h2 className="font-display text-2xl font-light text-ink mb-6">Calendar Filter</h2>
+                <div className="custom-calendar-container mb-6">
+                  <Calendar 
+                    onChange={setCalendarDate} 
+                    value={calendarDate} 
+                    tileContent={tileContent}
+                    className="w-full border-0 bg-transparent font-body" 
+                  />
+                </div>
+                <button onClick={() => setCalendarDate(null)} className="w-full py-3 border border-stone text-xs tracking-widest uppercase font-body text-ink hover:bg-stone/10 transition-colors">
+                  Clear Date Filter
+                </button>
+              </div>
+            </div>
+
+            {/* Bookings List */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="font-display text-2xl font-light text-ink">
+                  Booking Requests <span className="text-muted text-lg">({bookings.length})</span>
+                </h2>
+                <button onClick={fetchBookings} className="text-xs tracking-widest uppercase text-muted font-body hover:text-ink transition-colors">
+                  Refresh
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {bookings
+                  .filter(b => !calendarDate || (b.date && new Date(b.date).toDateString() === calendarDate.toDateString()))
+                  .map(booking => (
+                  <div key={booking.id} className="bg-cream p-6 border border-stone/20 flex flex-col md:flex-row gap-6 justify-between items-start">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-display text-xl text-ink">{booking.name}</h3>
+                        <span className="text-[10px] bg-stone/20 px-2 py-1 uppercase tracking-widest font-body text-ink">{booking.type}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm font-body text-muted">
+                        <p><strong>Email:</strong> {booking.email}</p>
+                        <p><strong>Phone:</strong> {booking.phone}</p>
+                        <p><strong>Date:</strong> {booking.date ? new Date(booking.date).toDateString() : 'N/A'}</p>
+                        <p><strong>Submitted:</strong> {new Date(booking.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      {booking.message && (
+                        <div className="mt-4 p-4 bg-warm border border-stone/10">
+                          <p className="text-sm font-body text-ink italic">"{booking.message}"</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-2 w-full md:w-auto">
+                       <a href={`https://wa.me/${booking.phone?.replace(/\D/g,'')}`} target="_blank" rel="noreferrer" 
+                          className="px-4 py-2 bg-green-500 text-white text-[10px] tracking-widest uppercase font-body text-center hover:bg-green-600 transition-colors">
+                         WhatsApp
+                       </a>
+                       <a href={`mailto:${booking.email}`}
+                          className="px-4 py-2 border border-stone/40 text-ink text-[10px] tracking-widest uppercase font-body text-center hover:border-ink transition-colors">
+                         Email
+                       </a>
+                    </div>
+                  </div>
+                ))}
+                {bookings.filter(b => !calendarDate || (b.date && new Date(b.date).toDateString() === calendarDate.toDateString())).length === 0 && (
+                  <div className="text-center py-20 border-2 border-dashed border-stone/30">
+                    <p className="font-display text-2xl text-stone font-light italic mb-2">No bookings found</p>
+                    <p className="text-xs tracking-widest uppercase text-muted font-body">Try changing the date filter</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Delete confirm modal */}

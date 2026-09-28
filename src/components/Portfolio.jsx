@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import FadeImage from './FadeImage';
 
 const CATEGORIES = ['All', 'Pre-wedding', 'Wedding', 'Portraits', 'Events'];
 
@@ -73,8 +74,8 @@ export default function Portfolio() {
                 style={{ y: index % 2 === 0 ? y1 : y2 }}
                 className="break-inside-avoid cursor-pointer group relative overflow-hidden mb-4"
                 onClick={() => setLightbox(item)}>
-                <img src={item.img} alt={item.title}
-                  className="w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                <FadeImage src={item.img} alt={item.title}
+                  className="w-full object-cover group-hover:scale-105"
                   loading="lazy" />
                 <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/50 transition-all duration-400 flex items-end p-5">
                   <div className="translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">

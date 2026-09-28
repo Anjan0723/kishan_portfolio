@@ -40,8 +40,46 @@ body {
   z-index: 1000; padding: 1rem;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  body {
-    cursor: none;
+@media (any-pointer: fine) {
+  * {
+    cursor: none !important;
   }
+}
+
+/* Calendar Overrides */
+.custom-calendar-container .react-calendar {
+  width: 100%;
+  border: none !important;
+  background-color: transparent !important;
+  font-family: inherit;
+}
+.custom-calendar-container .react-calendar__navigation button {
+  color: #1A1814;
+  font-size: 14px;
+}
+.custom-calendar-container .react-calendar__navigation button:enabled:hover,
+.custom-calendar-container .react-calendar__navigation button:enabled:focus {
+  background-color: #E8E2D7 !important;
+}
+.custom-calendar-container .react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #8C867B;
+}
+.custom-calendar-container .react-calendar__tile {
+  font-size: 12px;
+}
+.custom-calendar-container .react-calendar__tile:enabled:hover,
+.custom-calendar-container .react-calendar__tile:enabled:focus {
+  background-color: #E8E2D7 !important;
+  color: #1A1814 !important;
+}
+.custom-calendar-container .react-calendar__tile--now {
+  background: #E8E2D7 !important;
+  color: #1A1814 !important;
+}
+.custom-calendar-container .react-calendar__tile--active {
+  background: #1A1814 !important;
+  color: #F9F6F1 !important;
 }
