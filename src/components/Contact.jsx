@@ -6,7 +6,21 @@ export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', date: '', type: '', message: '' });
   const [sent, setSent] = useState(false);
 
-  const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  const handle = e => {
+    const { name, value } = e.target;
+    let newValue = value;
+    
+    if (name === 'phone') {
+      // Allow only digits and an optional leading '+'
+      newValue = value.replace(/[^\d+]/g, '');
+      // If there's a plus sign anywhere except the first character, remove it
+      if (newValue.indexOf('+') > 0) {
+        newValue = newValue.replace(/\+/g, '');
+      }
+    }
+    
+    setForm(f => ({ ...f, [name]: newValue }));
+  };
 
   const submit = async e => {
     e.preventDefault();
@@ -18,6 +32,7 @@ export default function Contact() {
         date: form.date,
         type: form.type,
         message: form.message,
+        status: 'Pending',
         createdAt: new Date().toISOString()
       });
     } catch (error) {
@@ -69,8 +84,8 @@ export default function Contact() {
 
             {/* Social */}
             <div className="mt-10 flex gap-4">
-              {['Instagram', 'YouTube', 'Facebook'].map(s => (
-                <a key={s} href="#" className="text-xs tracking-widest uppercase font-body text-muted dark:text-stone border-b border-stone/40 dark:border-stone/20 pb-0.5 hover:text-ink hover:border-ink dark:hover:text-cream dark:hover:border-cream transition-colors duration-200">
+              {['Instagram'].map(s => (
+                <a key={s} href="https://instagram.com/" target="_blank" rel="noreferrer" className="text-xs tracking-widest uppercase font-body text-muted dark:text-stone border-b border-stone/40 dark:border-stone/20 pb-0.5 hover:text-ink hover:border-ink dark:hover:text-cream dark:hover:border-cream transition-colors duration-200">
                   {s}
                 </a>
               ))}
@@ -92,7 +107,7 @@ export default function Contact() {
               <form onSubmit={submit} className="space-y-8">
                 <input name="name" required placeholder="Your name *" value={form.name} onChange={handle} className={inputClass} />
                 <input name="email" type="email" placeholder="Email address *" value={form.email} onChange={handle} className={inputClass} />
-                <input name="phone" placeholder="Phone / WhatsApp" value={form.phone} onChange={handle} className={inputClass} />
+                <input name="phone" type="tel" pattern="[\+]?[0-9]{10,15}" title="Please enter a valid phone number (10-15 digits)" placeholder="Phone / WhatsApp" value={form.phone} onChange={handle} className={inputClass} />
                 <div className="w-full border-b border-stone/40 dark:border-stone/20 focus-within:border-ink dark:focus-within:border-cream transition-colors duration-200 pt-2 pb-2">
                   <span className="text-[10px] tracking-widest uppercase text-stone dark:text-stone/50 font-body mb-1 block">Event / Shoot Date</span>
                   <input name="date" type="date" min={new Date().toISOString().split('T')[0]} value={form.date} onChange={handle} className="w-full bg-transparent outline-none text-sm font-body text-ink dark:text-cream cursor-pointer" />

@@ -11,6 +11,7 @@ export default function Portfolio() {
   const [lightbox, setLightbox] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(9);
   
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -24,12 +25,10 @@ export default function Portfolio() {
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        
         const snap = await getDocs(collection(db, 'portfolio'));
         const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         setPhotos(data);
       } catch (e) {
-        // fallback to empty if Firestore not ready
         setPhotos([]);
       }
       setLoading(false);
@@ -38,6 +37,15 @@ export default function Portfolio() {
   }, []);
 
   const filtered = active === 'All' ? photos : photos.filter(i => i.category === active);
+  const displayedPhotos = filtered.slice(0, visibleCount);
+
+  // Helper to get optimized Cloudinary URL for faster loading
+  const getOptimizedUrl = (url, width) => {
+    if (!url) return url;
+    return url.includes('/upload/') 
+      ? url.replace('/upload/', `/upload/q_auto,f_auto,w_${width}/`) 
+      : url;
+  };
 
   return (
     <section id="portfolio" ref={containerRef} className="py-24 px-6 bg-cream dark:bg-ink transition-colors duration-500">
@@ -49,7 +57,7 @@ export default function Portfolio() {
           </div>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map(c => (
-              <button key={c} onClick={() => setActive(c)}
+              <button key={c} onClick={() => { setActive(c); setVisibleCount(9); }}
                 className={`text-xs tracking-widest uppercase px-4 py-2 border transition-all duration-200 font-body
                   ${active === c ? 'bg-ink dark:bg-cream text-cream dark:text-ink border-ink dark:border-cream' : 'border-stone dark:border-stone/50 text-muted dark:text-stone hover:border-ink dark:hover:border-cream hover:text-ink dark:hover:text-cream'}`}>
                 {c}
@@ -68,24 +76,35 @@ export default function Portfolio() {
             <p className="text-xs tracking-widest uppercase text-muted dark:text-stone font-body">Photos will appear here once added</p>
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-            {filtered.map((item, index) => (
-              <motion.div key={item.id}
-                style={{ y: index % 2 === 0 ? y1 : y2 }}
-                className="break-inside-avoid cursor-pointer group relative overflow-hidden mb-4"
-                onClick={() => setLightbox(item)}>
-                <FadeImage src={item.img} alt={item.title}
-                  className="w-full object-cover group-hover:scale-105"
-                  loading="lazy" />
-                <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/50 transition-all duration-400 flex items-end p-5">
-                  <div className="translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                    <p className="font-display text-xl text-cream italic">{item.title}</p>
-                    <p className="text-xs tracking-widest uppercase text-stone font-body mt-1">{item.location}</p>
+          <>
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+              {displayedPhotos.map((item, index) => (
+                <motion.div key={item.id}
+                  style={{ y: index % 2 === 0 ? y1 : y2 }}
+                  className="break-inside-avoid cursor-pointer group relative overflow-hidden mb-4"
+                  onClick={() => setLightbox(item)}>
+                  <FadeImage src={getOptimizedUrl(item.img, 800)} alt={item.title}
+                    className="w-full object-cover group-hover:scale-105"
+                    loading="lazy" />
+                  <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/50 transition-all duration-400 flex items-end p-5">
+                    <div className="translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                      <p className="font-display text-xl text-cream italic">{item.title}</p>
+                      <p className="text-xs tracking-widest uppercase text-stone font-body mt-1">{item.location}</p>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {visibleCount < filtered.length && (
+              <div className="mt-16 text-center">
+                <button onClick={() => setVisibleCount(prev => prev + 9)}
+                  className="px-8 py-3.5 border border-stone dark:border-cream/50 text-ink dark:text-cream text-xs tracking-widest uppercase font-body hover:border-ink dark:hover:border-cream transition-colors duration-300">
+                  Load More Photos
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -94,7 +113,7 @@ export default function Portfolio() {
           <button className="absolute top-6 right-6 text-cream text-3xl leading-none hover:text-stone transition-colors"
             onClick={() => setLightbox(null)}>×</button>
           <div className="max-w-4xl w-full" onClick={e => e.stopPropagation()}>
-            <img src={lightbox.img} alt={lightbox.title} className="w-full max-h-[80vh] object-contain" />
+            <img src={getOptimizedUrl(lightbox.img, 1600)} alt={lightbox.title} className="w-full max-h-[80vh] object-contain" />
             <div className="mt-4 text-center">
               <p className="font-display text-2xl text-cream italic">{lightbox.title}</p>
               <p className="text-xs tracking-widest uppercase text-stone font-body mt-1">{lightbox.category} · {lightbox.location}</p>

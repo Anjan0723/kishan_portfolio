@@ -38,12 +38,12 @@ export default function StickyContactBar() {
           >
             WhatsApp
           </a>
-          <a
-            href="tel:+919113579050"
+          <button
+            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
             className="font-body text-xs tracking-widest uppercase bg-accent text-ink px-4 py-2 hover:bg-cream transition-colors duration-300"
           >
             Book a Shoot
-          </a>
+          </button>
         </div>
       </div>
     </div>

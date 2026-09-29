@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { uploadToCloudinary } from '../cloudinary';
 
@@ -17,8 +17,8 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [form, setForm] = useState({ title: '', location: '', category: 'Pre-wedding' });
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [successMsg, setSuccessMsg] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const fileRef = useRef();
@@ -57,34 +57,40 @@ export default function AdminDashboard() {
   useEffect(() => { fetchPhotos(); fetchBookings(); }, []);
 
   const handleFile = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setSelectedFile(file);
-    setPreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    setSelectedFiles(files);
+    setPreviews(files.map(file => URL.createObjectURL(file)));
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!selectedFile) return alert('Please select an image first!');
+    if (selectedFiles.length === 0) return alert('Please select at least one image!');
     if (!form.title || !form.location) return alert('Please fill in title and location!');
 
     setUploading(true);
     setProgress(0);
+    let uploadedCount = 0;
     try {
-      const result = await uploadToCloudinary(selectedFile, setProgress);
-      await addDoc(collection(db, 'portfolio'), {
-        title: form.title,
-        location: form.location,
-        category: form.category,
-        img: result.secure_url,
-        publicId: result.public_id,
-        createdAt: new Date().toISOString(),
-      });
+      for (const file of selectedFiles) {
+        const result = await uploadToCloudinary(file, (p) => {
+           setProgress(Math.round(((uploadedCount * 100) + p) / selectedFiles.length));
+        });
+        await addDoc(collection(db, 'portfolio'), {
+          title: selectedFiles.length > 1 ? `${form.title} ${uploadedCount + 1}` : form.title,
+          location: form.location,
+          category: form.category,
+          img: result.secure_url,
+          publicId: result.public_id,
+          createdAt: new Date().toISOString(),
+        });
+        uploadedCount++;
+      }
       setForm({ title: '', location: '', category: 'Pre-wedding' });
-      setSelectedFile(null);
-      setPreview(null);
+      setSelectedFiles([]);
+      setPreviews([]);
       fileRef.current.value = '';
-      setSuccessMsg('Photo added successfully!');
+      setSuccessMsg(`${uploadedCount} photo(s) added successfully!`);
       setTimeout(() => setSuccessMsg(''), 3000);
       fetchPhotos();
     } catch (err) {
@@ -100,6 +106,25 @@ export default function AdminDashboard() {
       setDeleteConfirm(null);
     } catch (e) {
       alert('Delete failed');
+    }
+  };
+
+  const updateBookingStatus = async (id, status) => {
+    try {
+      await updateDoc(doc(db, 'bookings', id), { status });
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
+    } catch (e) {
+      alert('Failed to update status');
+    }
+  };
+
+  const handleDeleteBooking = async (id) => {
+    if(!window.confirm('Are you sure you want to delete this booking?')) return;
+    try {
+      await deleteDoc(doc(db, 'bookings', id));
+      setBookings(prev => prev.filter(b => b.id !== id));
+    } catch (e) {
+      alert('Failed to delete booking');
     }
   };
 
@@ -146,22 +171,31 @@ export default function AdminDashboard() {
                 <div
                   onClick={() => fileRef.current.click()}
                   className={`border-2 border-dashed cursor-pointer transition-colors duration-200 flex flex-col items-center justify-center p-8 text-center
-                    ${preview ? 'border-ink' : 'border-stone/40 hover:border-stone'}`}>
-                  {preview ? (
-                    <img src={preview} alt="preview" className="w-full max-h-48 object-cover" />
+                    ${previews.length > 0 ? 'border-ink' : 'border-stone/40 hover:border-stone'}`}>
+                  {previews.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-2 w-full">
+                      {previews.slice(0, 6).map((p, idx) => (
+                         <img key={idx} src={p} alt="preview" className="w-full h-16 object-cover rounded-sm" />
+                      ))}
+                      {previews.length > 6 && (
+                        <div className="w-full h-16 flex items-center justify-center bg-stone/20 text-xs font-body text-ink">
+                          +{previews.length - 6} more
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <>
                       <div className="text-3xl text-stone mb-3">+</div>
-                      <p className="text-xs tracking-widest uppercase text-muted font-body">Click to select photo</p>
-                      <p className="text-[10px] text-stone font-body mt-1">JPG, PNG, WEBP</p>
+                      <p className="text-xs tracking-widest uppercase text-muted font-body">Click to select photos</p>
+                      <p className="text-[10px] text-stone font-body mt-1">JPG, PNG, WEBP (Multiple allowed)</p>
                     </>
                   )}
                 </div>
-                <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-                {preview && (
-                  <button type="button" onClick={() => { setPreview(null); setSelectedFile(null); fileRef.current.value = ''; }}
+                <input ref={fileRef} type="file" multiple accept="image/*" onChange={handleFile} className="hidden" />
+                {previews.length > 0 && (
+                  <button type="button" onClick={() => { setPreviews([]); setSelectedFiles([]); fileRef.current.value = ''; }}
                     className="text-[10px] tracking-widest uppercase text-muted font-body mt-2 hover:text-ink transition-colors">
-                    Remove image
+                    Clear all images
                   </button>
                 )}
               </div>
@@ -292,7 +326,24 @@ export default function AdminDashboard() {
                   <div key={booking.id} className="bg-cream p-6 border border-stone/20 flex flex-col md:flex-row gap-6 justify-between items-start">
                     <div className="space-y-2 flex-1">
                       <div className="flex justify-between items-start">
-                        <h3 className="font-display text-xl text-ink">{booking.name}</h3>
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-display text-xl text-ink">{booking.name}</h3>
+                          <select 
+                            value={booking.status || 'Pending'} 
+                            onChange={(e) => updateBookingStatus(booking.id, e.target.value)}
+                            className={`text-[10px] uppercase tracking-widest font-body px-2 py-1 outline-none cursor-pointer border ${
+                              booking.status === 'Confirmed' ? 'border-green-500 text-green-600 bg-green-50' :
+                              booking.status === 'Completed' ? 'border-blue-500 text-blue-600 bg-blue-50' :
+                              booking.status === 'Rejected' ? 'border-red-500 text-red-600 bg-red-50' :
+                              'border-yellow-500 text-yellow-600 bg-yellow-50'
+                            }`}
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Rejected">Rejected</option>
+                          </select>
+                        </div>
                         <span className="text-[10px] bg-stone/20 px-2 py-1 uppercase tracking-widest font-body text-ink">{booking.type}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm font-body text-muted">
@@ -316,6 +367,10 @@ export default function AdminDashboard() {
                           className="px-4 py-2 border border-stone/40 text-ink text-[10px] tracking-widest uppercase font-body text-center hover:border-ink transition-colors">
                          Email
                        </a>
+                       <button onClick={() => handleDeleteBooking(booking.id)}
+                          className="px-4 py-2 border border-red-400 text-red-500 text-[10px] tracking-widest uppercase font-body text-center hover:bg-red-50 transition-colors">
+                         Delete
+                       </button>
                     </div>
                   </div>
                 ))}
